@@ -24,7 +24,7 @@ def main(mytimer: func.TimerRequest) -> None:
         search_url = "https://api.bing.microsoft.com/v7.0/news/search"
 
         headers = {"Ocp-Apim-Subscription-Key" : BING_API_KEY}
-        params  = {"q": ticker, "textDecorations": True, "textFormat": "HTML", "mkt": market}
+        params  = {"q": ticker, "textDecorations": True, "textFormat": "HTML", "mkt": "en-US"}
 
         response = requests.get(search_url, headers=headers, params=params)
         response.raise_for_status()
