@@ -3,6 +3,8 @@ import logging
 import requests
 import json
 
+from newspaper import Article
+
 from constants import BING_API_KEY
 
 import azure.functions as func
@@ -17,7 +19,7 @@ def main(mytimer: func.TimerRequest) -> None:
     if mytimer.past_due:
         logging.info('The timer is past due!')
 
-    tickers = ["MSFT", "AAPL", "AVGO", "IBM", "TXN", "DOCN"]
+    tickers = ["MSFT", "AAPL", "DOCN", "AVGO", "TXN", "IBM"]
 
     for ticker in tickers:
         # search for news about a stock ticker on Bing News
@@ -30,11 +32,34 @@ def main(mytimer: func.TimerRequest) -> None:
         response.raise_for_status()
         response_json = response.json()
 
-        # convert results into json file
-        file_name = f"{ticker}-{datetime.datetime.today()}.json"
+        
+        article_info = {}
+        get_these = ["name", "description", "datePublished", "url"]
+
+        for i in get_these:
+                content = [response_json["value"][j][i] for j in range(len(response_json["value"]))]
+                article_info[i] = content
+
+        scraped_articles = []
+        for url in article_info["url"]:
+                try: 
+                    article = Article(url)
+
+                    article.download()
+                    article.parse()
+
+                    text = article.text
+                    scraped_articles.append(" ".join(text.split()[:100]))
+                except:
+                    scraped_articles.append(" ")
+
+        article_info["texts"] = scraped_articles
+
+        # convert results into json file and save them
+        file_name = f"{ticker}-{datetime.datetime.today().timestamp()}.json"
 
         with open(file_name, "w") as f:
-            json.dump(response_json, f)
+                json.dump(article_info, f)
 
         # connect and authenticate to the blob client
         account_url = "https://mlstorageleo.blob.core.windows.net"
