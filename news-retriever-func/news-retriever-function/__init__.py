@@ -5,12 +5,10 @@ import json
 
 from newspaper import Article
 
-from constants import BING_API_KEY
+from constants import BING_API_KEY, BLOB_KEY
 
 import azure.functions as func
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-from azure.identity import DefaultAzureCredential
-
+from azure.storage.blob import BlobServiceClient
 
 def main(mytimer: func.TimerRequest) -> None:
     utc_timestamp = datetime.datetime.utcnow().replace(
@@ -63,10 +61,9 @@ def main(mytimer: func.TimerRequest) -> None:
 
         # connect and authenticate to the blob client
         account_url = "https://mlstorageleo.blob.core.windows.net"
-        default_credential = DefaultAzureCredential()
 
         # Create the BlobServiceClient object
-        blob_service_client = BlobServiceClient(account_url, credential=default_credential)
+        blob_service_client = BlobServiceClient(account_url, credential=BLOB_KEY)
 
         blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=file_name)
 
