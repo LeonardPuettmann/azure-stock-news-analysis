@@ -1,13 +1,12 @@
-name: model-env
+name: stock-analysis-env
 channels:
   - conda-forge
 dependencies:
   - python=3.9
   - pip
   - pip:
-    - inference-schema[numpy-support]
-    - azure-ai-m
+    - azure-storage
     - transformers
     - sentencepiece
-    - pandas
     - numpy
+    - json

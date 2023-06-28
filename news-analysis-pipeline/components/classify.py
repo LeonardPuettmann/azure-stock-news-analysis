@@ -6,8 +6,9 @@ import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_data", type=str, help="path or URL to input data")
-parser.add_argument("--output_data", type=str, help="path or URL to output data")
+parser.add_argument("--blob_storage_read", type=str, help="Mounted Azure ML blob storage")
+parser.add_argument("--blobs_to_use_output", type=str, help="Mounted Azure ML blob storage")
+parser.add_argument("--blob_storage_write", type=str, help="Mounted Azure ML blob storage")
 args = parser.parse_args()
 
 # download distilbert model from HuggingFace
@@ -15,9 +16,13 @@ tokenizer = AutoTokenizer.from_pretrained("KernAI/stock-news-destilbert")
 model = AutoModelForSequenceClassification.from_pretrained("KernAI/stock-news-destilbert")
 
 def main():
-      #dir_list = os.listdir(args.input_data)
-      dir_list = args.input_data
-      for file_name in [file for file in os.listdir(dir_list) if file.endswith('.json')]:
+      # retriev the list of blobs from the current day - input is a .txt file
+      with open(args.blob_storage, "r") as f:
+            blobs_to_use = f.read()
+
+
+      dir_list = args.folder_path
+      for file_name in [file for file in os.listdir(dir_list) if file in blobs_to_use]:
             with open(dir_list + file_name) as json_file:
                   data = json.load(json_file)
             texts = data["texts"]
@@ -44,6 +49,8 @@ def main():
             # overwrite old files with new files containing the sentiment
             with open(dir_list+file_name, "w") as f:
                   json.dump(data, f)
+
+            # Note: no dedicated output needed here: we'll take the output from the first component again for the next step
 
 if __name__ == "__main__":
       main()

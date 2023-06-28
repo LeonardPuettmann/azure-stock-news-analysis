@@ -6,8 +6,9 @@ import os
 from transformers import PegasusTokenizer, PegasusForConditionalGeneration, TFPegasusForConditionalGeneration
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_data", type=str, help="path or URL to input data")
-parser.add_argument("--output_data", type=str, help="path or URL to output data")
+parser.add_argument("--blob_storage_read", type=str, help="Mounted Azure ML blob storage")
+parser.add_argument("--blobs_to_use_input", type=str, help="Mounted Azure ML blob storage")
+parser.add_argument("--blob_storage_write", type=str, help="Mounted Azure ML blob storage")
 args = parser.parse_args()
 
 # load the model and the tokenizer
@@ -16,7 +17,7 @@ model = PegasusForConditionalGeneration.from_pretrained("human-centered-summariz
 
 def main():
       #dir_list = os.listdir(args.input_data)
-      dir_list = args.input_data
+      dir_list = args.blob_storage
       for file_name in [file for file in os.listdir(dir_list) if file.endswith('.json')]:
             with open(dir_list + file_name) as json_file:
                   data = json.load(json_file)

@@ -6,12 +6,12 @@ import argparse
 def main():
 
     parser = argparse.ArgumentParser("prep")
-    parser.add_argument("--input_data", type=str, help="Path of prepped data")
-    parser.add_argument("--ougput_data", type=str, help="Path of prepped data")
+    parser.add_argument("--blob_storage_read", type=str, help="Mounted Azure ML blob storage")
+    parser.add_argument("--account_url")
     args = parser.parse_args()
 
     # log in to the Blob Service Client
-    account_url = "https://mlstorageleo.blob.core.windows.net"
+    account_url = args.account_url
     blob_service_client = BlobServiceClient(account_url, account_key=constants.BLOB_KEY)
 
     # connect to the container 
@@ -24,11 +24,11 @@ def main():
     current_day_timestamp = datetime.datetime.today().timestamp()
     current_day_timestamp = str(current_day_timestamp)[:8] # first 8 digits are the timestamp of the day
 
-    blobs_to_download = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
-    for blob in blobs_to_download:
-        download_file_path = os.path.join(args.prep_data, str(blob))
-        with open(file=download_file_path, mode="wb") as download_file:
-            download_file.write(container_client.download_blob(blob).readall())
+    blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
+
+    # ! the files should not be downloaded in this step. Instead it might make more sense to pass a list with the filenames to the next component
+    with open(args.blob_storage+"/blobs_to_use.txt", "w") as f:
+        f.write("\n".join(blob for blob in blobs_to_use), f)
 
 if __name__ == "__main__":
     main()
