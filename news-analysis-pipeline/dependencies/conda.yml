@@ -5,8 +5,9 @@ dependencies:
   - python=3.9
   - pip
   - pip:
-    - azure-storage
+    - azure-storage-blob
+    - azure-identity
+    - azure-keyvault
     - transformers
     - sentencepiece
     - numpy
-    - json

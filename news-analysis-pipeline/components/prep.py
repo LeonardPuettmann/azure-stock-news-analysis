@@ -1,34 +1,52 @@
 
 from azure.storage.blob import BlobServiceClient
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+
+credential = DefaultAzureCredential()
+secret_client = SecretClient(vault_url="https://mlgroupvault.vault.azure.net/", credential=credential)
 
 import argparse
 
-def main():
+parser = argparse.ArgumentParser("prep")
+parser.add_argument("--blob_storage", type=str, help="Mounted Azure ML blob storage")
+parser.add_argument("--prep_output")
+args = parser.parse_args()
 
-    parser = argparse.ArgumentParser("prep")
-    parser.add_argument("--blob_storage_read", type=str, help="Mounted Azure ML blob storage")
-    parser.add_argument("--account_url")
-    args = parser.parse_args()
+# log in to the Blob Service Client
+blob_storage = args.blob_storage
+blob_storage_key = secret = secret_client.get_secret("blob_storage_key-name")
+blob_service_client = BlobServiceClient(blob_storage, account_key=blob_storage_key.value)
 
-    # log in to the Blob Service Client
-    account_url = args.account_url
-    blob_service_client = BlobServiceClient(account_url, account_key=constants.BLOB_KEY)
+# connect to the container 
+container_client = blob_service_client.get_container_client(container="stock-news-json") 
 
-    # connect to the container 
-    container_client = blob_service_client.get_container_client(container="stock-news-json") 
+# list and download all currently available blobs
+blob_list = container_client.list_blobs()
 
-    # list and download all currently available blobs
-    blob_list = container_client.list_blobs()
+# get the timestamp with the current day 
+current_day_timestamp = datetime.datetime.today().timestamp()
+current_day_timestamp = str(current_day_timestamp)[:8] # first 8 digits are the timestamp of the day
 
-    # get the timestamp with the current day 
-    current_day_timestamp = datetime.datetime.today().timestamp()
-    current_day_timestamp = str(current_day_timestamp)[:8] # first 8 digits are the timestamp of the day
+blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
+for blob in blobs_to_use:
+      print(f"Downloading blob: {blob}")
+      blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob)
+      with open(blob, mode="wb") as sample_blob:
+            download_stream = blob_client.download_blob()
+            sample_blob.write(download_stream.readall())
 
-    blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
+all_data_dict = {}
+for json_file in blobs_to_use:
+      with open(json_file,"r+") as file:
+      # First we load existing data into a dict.
+            file_data = json.load(file)
+            all_data_dict.update(file_data)
+with open("merged_stock_news.json", "w") as file:
+      file.write(json.dumps(all_data_dict, indent=4))
 
-    # ! the files should not be downloaded in this step. Instead it might make more sense to pass a list with the filenames to the next component
-    with open(args.blob_storage+"/blobs_to_use.txt", "w") as f:
-        f.write("\n".join(blob for blob in blobs_to_use), f)
+# with open(args.blob_storage+"/blobs_to_use.txt", "w") as f:
+#     f.write("\n".join(blob for blob in blobs_to_use), f)
 
-if __name__ == "__main__":
-    main()
+(Path(args.prep_output) / "merged_stock_news.json")#.write_text("\n".join(blob for blob in blobs_to_use))
+# continue here with this example -> https://github.com/Azure/azureml-examples/blob/main/sdk/python/jobs/pipelines/1a_pipeline_with_components_from_yaml/score_src/score.py
