@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 # log in to the Blob Service Client
 blob_storage = args.blob_storage
-blob_storage_key = secret = secret_client.get_secret("blob_storage_key-name")
+blob_storage_key = secret_client.get_secret("blob-storage-key")
 blob_service_client = BlobServiceClient(blob_storage, account_key=blob_storage_key.value)
 
 # connect to the container 
@@ -26,7 +26,7 @@ blob_list = container_client.list_blobs()
 
 # get the timestamp with the current day 
 current_day_timestamp = datetime.datetime.today().timestamp()
-current_day_timestamp = str(current_day_timestamp)[:8] # first 8 digits are the timestamp of the day
+current_day_timestamp = str(current_day_timestamp)[:6] # first 8 digits are the timestamp of the day
 
 blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
 for blob in blobs_to_use:
