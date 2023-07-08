@@ -1,9 +1,12 @@
 
 from azure.storage.blob import BlobServiceClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
+from pathlib import Path
+import datetime
+import json
 
-credential = DefaultAzureCredential()
+credential = ManagedIdentityCredential(client_id="a4d3af98-d651-42db-850f-485cbe770757")
 secret_client = SecretClient(vault_url="https://mlgroupvault.vault.azure.net/", credential=credential)
 
 import argparse
@@ -23,15 +26,16 @@ container_client = blob_service_client.get_container_client(container="stock-new
 
 # list and download all currently available blobs
 blob_list = container_client.list_blobs()
+print(f"Blob from: {blob_storage} has these blobs today: {blob_list}")
 
 # get the timestamp with the current day 
 current_day_timestamp = datetime.datetime.today().timestamp()
-current_day_timestamp = str(current_day_timestamp)[:6] # first 8 digits are the timestamp of the day
+current_day_timestamp = str(current_day_timestamp)[:5] # first 8 digits are the timestamp of the day
 
 blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
 for blob in blobs_to_use:
       print(f"Downloading blob: {blob}")
-      blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob)
+      blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=blob)
       with open(blob, mode="wb") as sample_blob:
             download_stream = blob_client.download_blob()
             sample_blob.write(download_stream.readall())
