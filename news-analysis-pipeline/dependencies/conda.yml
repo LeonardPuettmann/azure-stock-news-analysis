@@ -9,5 +9,6 @@ dependencies:
     - azure-identity
     - azure-keyvault
     - transformers
+    - torch
     - sentencepiece
     - numpy

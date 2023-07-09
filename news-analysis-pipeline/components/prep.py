@@ -1,13 +1,15 @@
 
 from azure.storage.blob import BlobServiceClient
-from azure.identity import ManagedIdentityCredential
+from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from pathlib import Path
 import datetime
 import json
 
-credential = ManagedIdentityCredential(client_id="a4d3af98-d651-42db-850f-485cbe770757")
-secret_client = SecretClient(vault_url="https://mlgroupvault.vault.azure.net/", credential=credential)
+credential = DefaultAzureCredential()
+# Check if given credential can get token successfully.
+credential.get_token("https://management.azure.com/.default")
+secret_client = SecretClient(vault_url="https://mlgroup.vault.azure.net/", credential=credential)
 
 import argparse
 
@@ -46,11 +48,8 @@ for json_file in blobs_to_use:
       # First we load existing data into a dict.
             file_data = json.load(file)
             all_data_dict.update(file_data)
-with open("merged_stock_news.json", "w") as file:
+            
+with open((Path(args.prep_output) / "merged_stock_news.json"), "w") as file:
       file.write(json.dumps(all_data_dict, indent=4))
 
-# with open(args.blob_storage+"/blobs_to_use.txt", "w") as f:
-#     f.write("\n".join(blob for blob in blobs_to_use), f)
-
-(Path(args.prep_output) / "merged_stock_news.json")#.write_text("\n".join(blob for blob in blobs_to_use))
-# continue here with this example -> https://github.com/Azure/azureml-examples/blob/main/sdk/python/jobs/pipelines/1a_pipeline_with_components_from_yaml/score_src/score.py
+# this is a comments

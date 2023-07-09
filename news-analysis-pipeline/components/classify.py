@@ -16,9 +16,10 @@ tokenizer = AutoTokenizer.from_pretrained("KernAI/stock-news-destilbert")
 model = AutoModelForSequenceClassification.from_pretrained("KernAI/stock-news-destilbert")
 
 # retriev the list of blobs from the current day - input is a .txt file
-with open(args.classify_input, "r") as f:
-      data = f.read()
+with open(os.path.join(args.classify_input, "merged_stock_news.json"), "r") as f:
+      data = json.load(f)
 texts = data["texts"]
+
 
 sentiments = []
 for text in texts: 
@@ -40,7 +41,5 @@ for text in texts:
 data["sentiments"] = sentiments
 
 # overwrite old files with new files containing the sentiment
-with open("merged_stock_news.json", "w") as f:
+with open((Path(args.classify_output) / "merged_stock_news.json"), "w") as f:
       json.dump(data, f)
-
-(Path(args.prep_output) / "merged_stock_news.json")
