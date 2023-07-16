@@ -12,7 +12,8 @@ import azure.functions as func
 from azure.storage.blob import BlobServiceClient
 
 credential = DefaultAzureCredential()
-secret_client = SecretClient(vault_url="https://mlgroupvault.vault.azure.net/", credential=credential)
+credential.get_token("https://management.azure.com/.default")
+secret_client = SecretClient(vault_url="https://mlgroup.vault.azure.net/", credential=credential)
 
 
 def main(mytimer: func.TimerRequest) -> None:
@@ -60,14 +61,14 @@ def main(mytimer: func.TimerRequest) -> None:
         article_info["texts"] = scraped_articles
 
         # store dict as a json string
-        file_name = f"/tmp/{ticker}-{datetime.datetime.today().timestamp()}.json"
+        file_name = f"{ticker}-{datetime.datetime.today().timestamp()}.json"
         data = json.dumps(article_info)
 
         # connect and authenticate to the blob client
         account_url = "https://mlstorageleo.blob.core.windows.net"
 
         # Create the BlobServiceClient object
-        blob_storage_key = secret_client.get_secret("blob_storage_key-name")
+        blob_storage_key = secret_client.get_secret("blob-storage-key")
         blob_service_client = BlobServiceClient(account_url, credential=blob_storage_key.value)
         blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=file_name)
         blob_client.upload_blob(data)
