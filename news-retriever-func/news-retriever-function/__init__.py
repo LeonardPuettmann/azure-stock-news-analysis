@@ -59,6 +59,7 @@ def main(mytimer: func.TimerRequest) -> None:
                     scraped_articles.append(" ")
 
         article_info["texts"] = scraped_articles
+        article_info["ticker"] = ticker * len(article_info["texts"])
 
         # store dict as a json string
         file_name = f"{ticker}-{datetime.datetime.today().timestamp()}.json"
