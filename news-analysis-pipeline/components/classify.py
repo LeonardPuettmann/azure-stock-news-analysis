@@ -18,27 +18,29 @@ model = AutoModelForSequenceClassification.from_pretrained("KernAI/stock-news-de
 # retriev the list of blobs from the current day - input is a .txt file
 with open(os.path.join(args.classify_input, "merged_stock_news.json"), "r") as f:
       data = json.load(f)
-texts = data["texts"]
 
+# get a list of all tickers in the data   
+tickers = list(data.keys())
+for ticker in tickers:
+      texts = data[ticker]["texts"]
+      sentiments = []
+      for text in texts: 
+            tokenized_text = tokenizer(
+                  text,
+                  truncation=True,
+                  is_split_into_words=False,
+                  return_tensors="pt"
+            )
 
-sentiments = []
-for text in texts: 
-      tokenized_text = tokenizer(
-            text,
-            truncation=True,
-            is_split_into_words=False,
-            return_tensors="pt"
-      )
+            outputs = model(tokenized_text["input_ids"])
+            outputs_logits = outputs.logits.argmax(1)
 
-      outputs = model(tokenized_text["input_ids"])
-      outputs_logits = outputs.logits.argmax(1)
+            mapping = {0: 'neutral', 1: 'negative', 2: 'positive'}
+            predicted_label = mapping[int(outputs_logits[0])]
+            sentiments.append(predicted_label)
 
-      mapping = {0: 'neutral', 1: 'negative', 2: 'positive'}
-      predicted_label = mapping[int(outputs_logits[0])]
-      sentiments.append(predicted_label)
-
-# add the sentiments to the data
-data["sentiments"] = sentiments
+      # add the sentiments to the data
+      data[ticker]["sentiments"] = sentiments
 
 # overwrite old files with new files containing the sentiment
 with open((Path(args.classify_output) / "merged_stock_news.json"), "w") as f:

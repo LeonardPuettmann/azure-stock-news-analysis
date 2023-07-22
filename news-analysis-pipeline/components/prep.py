@@ -31,10 +31,9 @@ blob_list = container_client.list_blobs()
 print(f"Blob from: {blob_storage} has these blobs today: {blob_list}")
 
 # get the timestamp with the current day 
-current_day_timestamp = datetime.datetime.today().timestamp()
-current_day_timestamp = str(current_day_timestamp)[:5] # first 8 digits are the timestamp of the day
+current_day_date = datetime.datetime.today().isoformat()[:10]
 
-blobs_to_use = [blob.name for blob in blob_list if current_day_timestamp in blob.name]
+blobs_to_use = [blob.name for blob in blob_list if current_day_date in blob.name]
 for blob in blobs_to_use:
       print(f"Downloading blob: {blob}")
       blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=blob)

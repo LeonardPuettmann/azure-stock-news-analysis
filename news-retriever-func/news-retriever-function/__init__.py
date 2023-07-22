@@ -59,11 +59,12 @@ def main(mytimer: func.TimerRequest) -> None:
                     scraped_articles.append(" ")
 
         article_info["texts"] = scraped_articles
-        article_info["ticker"] = ticker * len(article_info["texts"])
+        finished_dict = {}
+        finished_dict[ticker] = article_info
 
         # store dict as a json string
-        file_name = f"{ticker}-{datetime.datetime.today().timestamp()}.json"
-        data = json.dumps(article_info)
+        file_name = f"{ticker}-{datetime.datetime.today().isoformat()[:10]}.json"
+        data = json.dumps(finished_dict)
 
         # connect and authenticate to the blob client
         account_url = "https://mlstorageleo.blob.core.windows.net"
