@@ -21,16 +21,21 @@ container_client = blob_service_client.get_container_client(container="processed
 
 # list and download all currently available blobs
 blob_list = container_client.list_blobs()
-current_day_date = datetime.datetime.today().isoformat()[:10]
+available_dates = [datetime.datetime.strptime(str(file_name.name)[21:31],"%Y-%m-%d") for file_name in blob_list] # processed-stock-news-2023-07-22.json
+selected_date = st.sidebar.date_input("Start date", value=max(available_dates), min_value=min(available_dates), max_value=max(available_dates), format="YYYY-MM-DD")
 
-blob_to_use = [blob.name for blob in blob_list if current_day_date in blob.name][0]
-print(f"Downloading blob: {blob_to_use}")
-blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=blob_to_use)
-with open(blob_to_use, mode="wb") as sample_blob:
-    download_stream = blob_client.download_blob()
-    sample_blob.write(download_stream.readall())
+tickers = ["MSFT", "AAPL", "DOCN", "AVGO", "TXN", "IBM"]
+ticker_symbol = st.sidebar.selectbox('Stock ticker', tickers) 
 
-with open(blob_to_use,"r+") as file:
-    data = json.load(file)
+# for blob in blob_list:
+#     blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=blob)
+#     with open(f"blobs/{blob}", mode="wb") as sample_blob:
+#         download_stream = blob_client.download_blob()
+#         sample_blob.write(download_stream.readall())
+
+# with open(blob,"r+") as file:
+#     data = json.load(file)
+
+
             
 
