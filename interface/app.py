@@ -4,6 +4,11 @@ from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
+import plotly.graph_objects as go
+
+import yfinance as yf
+
+from os.path import exists
 import datetime
 import json
 
@@ -27,14 +32,37 @@ selected_date = st.sidebar.date_input("Start date", value=max(available_dates), 
 tickers = ["MSFT", "AAPL", "DOCN", "AVGO", "TXN", "IBM"]
 ticker_symbol = st.sidebar.selectbox('Stock ticker', tickers) 
 
+if ticker_symbol and selected_date:
 # for blob in blob_list:
-#     blob_client = blob_service_client.get_blob_client(container="stock-news-json", blob=blob)
-#     with open(f"blobs/{blob}", mode="wb") as sample_blob:
-#         download_stream = blob_client.download_blob()
-#         sample_blob.write(download_stream.readall())
+    if not exists(f"interface/blobs/processed-stock-news-{selected_date}.json"):
+        blob_client = blob_service_client.get_blob_client(container="processed-stock-news-json", blob=f"processed-stock-news-{selected_date}.json")
+        with open(f"interface/blobs/processed-stock-news-{selected_date}.json", mode="wb") as sample_blob:
+            download_stream = blob_client.download_blob()
+            sample_blob.write(download_stream.readall())
 
-# with open(blob,"r+") as file:
-#     data = json.load(file)
+    with open(f"interface/blobs/processed-stock-news-{selected_date}.json", mode="r+") as f:
+        data = json.load(f)
+
+    summaries = data[ticker_symbol]["summaries"]
+    summaries = [i for i in summaries if "All photographs subject to copyright." not in i]
+    st.write(summaries)
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("positive sentiments", data[ticker_symbol]["sentiments"].count("positive"))
+    col2.metric("neutral sentiments", data[ticker_symbol]["sentiments"].count("neutral"))
+    col3.metric("negative sentiments", data[ticker_symbol]["sentiments"].count("negative"))
+
+
+    data = yf.download(ticker_symbol, start=selected_date, end=selected_date + datetime.timedelta(days=1), interval="1m")
+    fig = go.Figure(data=go.Ohlc(x=data.index,
+                    open=data["Open"],
+                    high=data["High"],
+                    low=data["Low"],
+                    close=data["Close"],
+    ))
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
             
