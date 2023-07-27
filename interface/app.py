@@ -45,6 +45,11 @@ if ticker_symbol and selected_date:
 
     summaries = data[ticker_symbol]["summaries"]
     summaries = [i for i in summaries if "All photographs subject to copyright." not in i]
+
+    urls = data[ticker_symbol]["url"]
+
+    #tab1, tab2 = st.tabs(["Tab 1", "Tab2"])
+    
     st.write(summaries)
 
     col1, col2, col3 = st.columns(3)
@@ -64,6 +69,9 @@ if ticker_symbol and selected_date:
 
     st.plotly_chart(fig, use_container_width=True)
 
-
+    # for idx, item in enumerate(len(data)):
+    #     str.subheader(data[ticker_symbol]["description"][idx])
+    #     str.markdown(data[ticker_symbol]["text"][idx])
+    #     str.markdown(data[ticker_symbol["url"][idx]])
             
 
