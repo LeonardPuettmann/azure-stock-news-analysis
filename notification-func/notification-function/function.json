@@ -1,0 +1,12 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "myblob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "processed-stock-news-json",
+      "connection": "mlstorageleo_STORAGE"
+    }
+  ]
+}
