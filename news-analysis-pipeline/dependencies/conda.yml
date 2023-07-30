@@ -8,6 +8,7 @@ dependencies:
     - azure-storage-blob
     - azure-identity
     - azure-keyvault
+    - azure-communication-email
     - transformers
     - torch
     - sentencepiece
