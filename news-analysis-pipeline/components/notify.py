@@ -22,13 +22,15 @@ conenction_string = secret_client.get_secret("mail-connection-string")
 email_client = EmailClient.from_connection_string(conenction_string.value)
 
 with open(os.path.join(args.notify_input, "merged_stock_news.json"), "r") as f:
-      data = json.load(f)
+      data_string = json.load(f)
 
+data = json.loads(data_string)
+
+nl = "\n"
 msft_summaries = " ".join([i+nl for i in data["MSFT"]["summaries"] if "All photographs subject to copyright." not in i])
 msft_sentiments = (data["MSFT"]["sentiments"].count("positive"), data["MSFT"]["sentiments"].count("neutral"), data["MSFT"]["sentiments"].count("negative"))
 msft_texts = " ".join([i+nl for i in data["MSFT"]["url"]])
 
-nl = "\n"
 text = f"""
 This is your daily stock news summary. 
 
