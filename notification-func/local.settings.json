@@ -1,0 +1,8 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "mlstorageleo_STORAGE": "DefaultEndpointsProtocol=https;AccountName=mlstorageleo;AccountKey=arKdpKK4S1YSqbxdT62PhnlxZAXbWztSUCz9aivq6Y+ypyTFFCIXVjlm7+PnGAFDQ76RqCLZRxw5+AStoDJ6bA==;EndpointSuffix=core.windows.net"
+  }
+}
