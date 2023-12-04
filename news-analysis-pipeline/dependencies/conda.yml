@@ -13,3 +13,4 @@ dependencies:
     - torch
     - sentencepiece
     - numpy
+    - openai

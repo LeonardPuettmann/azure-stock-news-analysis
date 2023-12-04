@@ -8,11 +8,10 @@ import datetime
 import argparse
 import json
 import os
-
-from transformers import PegasusTokenizer, PegasusForConditionalGeneration, TFPegasusForConditionalGeneration
+from openai import OpenAI
 
 credential = DefaultAzureCredential()
-# Check if given credential can get token successfully.
+# check if given credential can get token successfully.
 credential.get_token("https://management.azure.com/.default")
 secret_client = SecretClient(vault_url="https://mlgroup.vault.azure.net/", credential=credential)
 
@@ -21,45 +20,48 @@ parser.add_argument("--summarize_input", type=str, help="Mounted Azure ML blob s
 parser.add_argument("--summarize_output", type=str, help="Mounted Azure ML blob storage")
 args = parser.parse_args()
 
-# load the model and the tokenizer
-tokenizer = PegasusTokenizer.from_pretrained("human-centered-summarization/financial-summarization-pegasus")
-model = PegasusForConditionalGeneration.from_pretrained("human-centered-summarization/financial-summarization-pegasus") 
 
 # retriev the list of blobs from the current day - input is a .txt file
 with open(os.path.join(args.summarize_input, "merged_stock_news.json"), "r") as f:
       data = json.load(f)
 
+# authenticate to openai
+api_key = api_key=secret_client.get_secret("openai-key")
+openai_client = OpenAI(api_key=api_key.value)
+
+# get a list of all tickers, summaries all texts for each ticker
 tickers = list(data.keys())
 for ticker in tickers:
-      texts = data[ticker]["texts"]
+    texts = data[ticker]["texts"]
 
-      summaries = []
-      for text in texts: 
-            # Tokenize our text
-            # If you want to run the code in Tensorflow, please remember to return the particular tensors as simply as using return_tensors = 'tf'
-            input_ids = tokenizer(text, return_tensors="pt").input_ids
+    summaries = []
+    for text in texts: 
+        response = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+                {"role": "system", "content": """
+                    You are a helpful assistant for summarizing stock and finance news. 
+                    Ensure to include numbers like stock price changes or concrete earning numbers.
+                    Keep it as short as possible."""},
+                {"role": "user", "content": f"Please summarize the following article in one short sentence: {text}"},
+            ],
+            max_tokens=60, 
+            temperature=0.0
+        )
 
-            # Generate the output (Here, we use beam search but you can also use any other strategy you like)
-            output = model.generate(
-                  input_ids, 
-                  max_length=32, 
-                  num_beams=5, 
-                  early_stopping=True
-            )
+        summaries.append(response.choices[0].message.content)
 
-            # Finally, we can print the generated summary
-            summaries.append(tokenizer.decode(output[0], skip_special_tokens=True))
+    # add the sentiments to the data
+    data[ticker]["summaries"] = summaries
 
-      # add the sentiments to the data
-      data[ticker]["summaries"] = summaries
-      
+# safe file in json format   
 data = json.dumps(data)
 
 # connect and authenticate to the blob client
 account_url = "https://mlstorageleo.blob.core.windows.net"
 file_name = f"processed-stock-news-{datetime.datetime.today().isoformat()[:10]}.json"
 
-# Create the BlobServiceClient object
+# create the BlobServiceClient object
 blob_storage_key = secret_client.get_secret("blob-storage-key")
 blob_service_client = BlobServiceClient(account_url, credential=blob_storage_key.value)
 blob_client = blob_service_client.get_blob_client(container="processed-stock-news-json", blob=file_name)

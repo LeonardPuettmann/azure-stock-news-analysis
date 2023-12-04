@@ -33,6 +33,7 @@ print(f"Blob from: {blob_storage} has these blobs today: {blob_list}")
 # get the timestamp with the current day 
 current_day_date = datetime.datetime.today().isoformat()[:10]
 
+# filter out which blobs have the current date and download them
 blobs_to_use = [blob.name for blob in blob_list if current_day_date in blob.name]
 for blob in blobs_to_use:
       print(f"Downloading blob: {blob}")
@@ -41,14 +42,14 @@ for blob in blobs_to_use:
             download_stream = blob_client.download_blob()
             sample_blob.write(download_stream.readall())
 
+# combine all blobs into one dictionary
 all_data_dict = {}
 for json_file in blobs_to_use:
       with open(json_file,"r+") as file:
       # First we load existing data into a dict.
             file_data = json.load(file)
             all_data_dict.update(file_data)
-            
+
+# pass aggregated file to the next step        
 with open((Path(args.prep_output) / "merged_stock_news.json"), "w") as file:
       file.write(json.dumps(all_data_dict, indent=4))
-
-# this is a comments
