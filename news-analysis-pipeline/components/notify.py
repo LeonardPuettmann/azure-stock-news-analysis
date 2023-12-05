@@ -20,19 +20,20 @@ parser.add_argument("--notify_output", type=str, help="Mounted Azure ML blob sto
 args = parser.parse_args()
 
 with open(os.path.join(args.notify_input, "merged_stock_news.json"), "r") as f:
-      data = json.load(f)
+    data = json.load(f)
 
-nl = "\n"
+# print(data)
+# print(type(data))
 
 def format_data(ticker):
-    data = load_stock_data
-    summaries = " ".join([i + nl for i in data[ticker]["summaries"] if "All photographs subject to copyright." not in i])
+    global data
+    summaries = " ".join(data[ticker]["summaries"])
     sentiments = (
         data[ticker]["sentiments"].count("positive"),
         data[ticker]["sentiments"].count("neutral"),
         data[ticker]["sentiments"].count("negative"),
     )
-    texts = " ".join([i + nl for i in data[ticker]["url"]])
+    texts = " ".join(data[ticker]["url"])
     return summaries, sentiments, texts
 
 msft_summaries, msft_sentiments, msft_texts = format_data("MSFT")
@@ -85,9 +86,6 @@ credential.get_token("https://management.azure.com/.default")
 secret_client = SecretClient(vault_url="https://mlgroup.vault.azure.net/", credential=credential)
 connection_string = secret_client.get_secret("mail-connection-string")
 email_client = EmailClient.from_connection_string(connection_string.value)
-
-# Build email content
-email_content = build_email_content(data)
 
 # Send email
 send_email(email_client, EMAIL_SUBJECT, email_content, RECIPIENT_ADDRESS, SENDER_ADDRESS)

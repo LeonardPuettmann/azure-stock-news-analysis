@@ -54,18 +54,16 @@ for ticker in tickers:
     # add the sentiments to the data
     data[ticker]["summaries"] = summaries
 
-# safe file in json format   
-data = json.dumps(data)
-
 # connect and authenticate to the blob client
 account_url = "https://mlstorageleo.blob.core.windows.net"
 file_name = f"processed-stock-news-{datetime.datetime.today().isoformat()[:10]}.json"
 
 # create the BlobServiceClient object
+blob_data = json.dumps(data)
 blob_storage_key = secret_client.get_secret("blob-storage-key")
 blob_service_client = BlobServiceClient(account_url, credential=blob_storage_key.value)
 blob_client = blob_service_client.get_blob_client(container="processed-stock-news-json", blob=file_name)
-blob_client.upload_blob(data)
+blob_client.upload_blob(blob_data)
 
 # overwrite old files with new files containing the sentiment
 with open((Path(args.summarize_output) / "merged_stock_news.json"), "w") as f:
