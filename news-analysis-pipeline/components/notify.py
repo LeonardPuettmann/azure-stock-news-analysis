@@ -37,7 +37,7 @@ def format_data(ticker):
     return summaries, sentiments, texts
 
 msft_summaries, msft_sentiments, msft_texts = format_data("MSFT")
-docn_summaries, docn_sentiments, docn_texts = format_data("DOCN")
+aapl_summaries, aapl_sentiments, aapl_texts = format_data("AAPL")
 txn_summaries, txn_sentiments, txn_texts = format_data("TXN")
 
 email_content = f"""
@@ -50,9 +50,9 @@ News about Microsoft:
 === \n\n
 
 ===
-News about DigitalOcean: 
-{docn_summaries}
-\n Sentiments: positive -> {docn_sentiments[0]} | neutral -> {docn_sentiments[1]} | negative -> {docn_sentiments[2]}
+News about Apple: 
+{aapl_summaries}
+\n Sentiments: positive -> {aapl_sentiments[0]} | neutral -> {aapl_sentiments[1]} | negative -> {aapl_sentiments[2]}
 === \n\n
 
 ===

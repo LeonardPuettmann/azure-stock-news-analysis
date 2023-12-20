@@ -39,11 +39,16 @@ for ticker in tickers:
         response = openai_client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-                {"role": "system", "content": """
-                    You are a helpful assistant for summarizing stock and finance news. 
-                    Ensure to include numbers like stock price changes or concrete earning numbers.
-                    Keep it as short as possible."""},
-                {"role": "user", "content": f"Please summarize the following article in one short sentence: {text}"},
+                {"role": "system", "content": f"""
+                    As an assistant, your task is to summarize stock and finance news. 
+                    Your summary should be a single sentence that rephrases the key information without using phrases like "The article is about" or "The article discusses". 
+                    When in doubt, leave information out. The summary should be short.
+                    Be sure to include specific numbers such as stock price changes or concrete earning figures. Aim for brevity and precision in your summary.
+                    =========
+                    Article: {text}
+                    =========
+                    Summary: 
+                    """}
             ],
             max_tokens=60, 
             temperature=0.0
