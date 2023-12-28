@@ -36,25 +36,29 @@ for ticker in tickers:
 
     summaries = []
     for text in texts: 
-        response = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-                {"role": "system", "content": f"""
-                    As an assistant, your task is to summarize stock and finance news. 
-                    Your summary should be a single sentence that rephrases the key information without using phrases like "The article is about" or "The article discusses". 
-                    When in doubt, leave information out. The summary should be short.
-                    Be sure to include specific numbers such as stock price changes or concrete earning figures. Aim for brevity and precision in your summary.
-                    =========
-                    Article: {text}
-                    =========
-                    Summary: 
-                    """}
-            ],
-            max_tokens=60, 
-            temperature=0.0
-        )
+        if len(text) == 0:
+            pass
+        else:
+            response = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                    {"role": "system", "content": f"""
+                        As an assistant, your task is to summarize stock and finance news. 
+                        Your summary should be a single sentence that rephrases the key information of the article. 
+                        When in doubt, leave information out. The summary should be very short.
+                        Be sure to include specific numbers such as stock price changes or concrete earning figures. 
+                        Aim for brevity and precision in your summary.
+                        =========
+                        Article: {text}
+                        =========
+                        Summary: 
+                        """}
+                ],
+                max_tokens=60, 
+                temperature=0.0
+            )
 
-        summaries.append(response.choices[0].message.content)
+            summaries.append(response.choices[0].message.content)
 
     # add the sentiments to the data
     data[ticker]["summaries"] = summaries

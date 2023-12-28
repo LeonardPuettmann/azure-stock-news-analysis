@@ -70,12 +70,16 @@ for ticker, ticker_data in data.items():
     texts = ticker_data["texts"]
 
     # Use the models and append sentiments
-    sentiments_distilbert = [use_model(destilbert_model, destilbert_tokenizer, text) for text in texts]
-    sentiments_finbert = [use_model(finbert_model, finbert_tokenizer, text) for text in texts]
+    sentiments_distilbert = []
+    for text in texts:
+        if len(text) == 0:
+            pass
+        else:
+            sentiment = use_model(destilbert_model, destilbert_tokenizer, text)
+            sentiments_distilbert.append(sentiment)
 
     # Update the data with sentiments
     ticker_data["sentiments"] = sentiments_distilbert
-    ticker_data["sentiments_finbert"] = sentiments_finbert
 
 # Write the updated data back to the output file
 output_file_path = Path(args.classify_output) / "merged_stock_news.json"
